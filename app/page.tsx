@@ -31,7 +31,8 @@ export default function Home() {
     setSearchQuery('');
 
     try {
-      const res = await fetch('/api/transcript', {
+      // यहाँ Vercel के बजाय Render वाले लाइव बैकएंड का URL दिया गया है
+      const res = await fetch('https://youtube-transcript-backend-03cx.onrender.com/api/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ videoUrl }),
