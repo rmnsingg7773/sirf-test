@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // इस IP को डेवलपमेंट में अनुमति देना
+  allowedDevOrigins: ["192.168.31.48"],
 };
 
 export default nextConfig;
