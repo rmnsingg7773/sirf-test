@@ -12,8 +12,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // YoutubeTranscript लाइब्रेरी से सबटाइटल/कैप्शन फेच करना
-    const transcriptData = await YoutubeTranscript.fetchTranscript(videoUrl);
+    // Vercel पर IP ब्लॉक से बचने के लिए custom lang और options पास करना
+    let transcriptData;
+    try {
+      transcriptData = await YoutubeTranscript.fetchTranscript(videoUrl, {
+        lang: 'hi', // पहले हिंदी ढूंढने की कोशिश करेगा
+      });
+    } catch (err) {
+      try {
+        // अगर हिंदी न मिले, तो डिफ़ॉल्ट (अक्सर English) ट्राई करेगा
+        transcriptData = await YoutubeTranscript.fetchTranscript(videoUrl);
+      } catch (innerErr) {
+        throw innerErr;
+      }
+    }
 
     if (!transcriptData || transcriptData.length === 0) {
       return NextResponse.json(
@@ -22,7 +34,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // समय को सेकेंड से mm:ss में बदलने का हेल्पर फंक्शन
     const formattedTranscript = transcriptData.map((item) => {
       const minutes = Math.floor(item.offset / 1000 / 60);
       const seconds = Math.floor((item.offset / 1000) % 60);
@@ -46,8 +57,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          'कैप्शन फेच करने में विफल। सुनिश्चित करें कि वीडियो में कैप्शंस (Subtitles) चालू हैं।',
+        error: 'YouTube ने इस सर्वर की रिक्वेस्ट को ब्लॉक कर दिया है या वीडियो में कैप्शन बंद हैं।',
       },
       { status: 500 }
     );
